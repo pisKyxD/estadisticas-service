@@ -145,3 +145,17 @@ def estadisticas_globales(usuario: dict = Depends(usuario_actual)):
         "top_jugadores": top,
         "apuestas": {**ap, "win_rate": win_rate},
     }
+
+# --- Health probes ---
+from fastapi.responses import JSONResponse
+from .db import ping
+
+@app.get("/livez")
+def liveness():
+    return {"status": "ok", "service": "estadisticas-service"}
+
+@app.get("/readyz")
+def readiness():
+    if ping():
+        return {"status": "ready", "db": "ok"}
+    return JSONResponse(status_code=503, content={"status": "not ready", "db": "down"})
